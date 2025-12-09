@@ -10,7 +10,7 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background: #222;
+      background: #2f2f2f;
       font-family: Arial, sans-serif;
     }
     body {
@@ -82,66 +82,66 @@ const keys = [
   // row 0 – yellow / pink / purple keys
   { row: 0, col: 0, label: "SHIFT", fill: "#6f6aa8", text: "#fff" },
   { row: 0, col: 1, label: "ALPHA", fill: "#6f6aa8", text: "#fff" },
-  { row: 0, col: 4, label: "MODE", fill: "#6f6aa8", text: "#fff" },
-  { row: 0, col: 5, label: "ON", fill: "#6f6aa8", text: "#fff" },
+  { row: 0, col: 4, label: "MODE",  fill: "#6f6aa8", text: "#fff" },
+  { row: 0, col: 5, label: "ON",    fill: "#6f6aa8", text: "#fff" },
 
   // row 1 – trig / special
-  { row: 1, col: 0, label: "Abs", fill: "#606070", text: "#fff" },
-  { row: 1, col: 1, label: "x³", fill: "#606070", text: "#fff" },
-  { row: 1, col: 4, label: "x⁻¹", fill: "#606070", text: "#fff" },
-  { row: 1, col: 5, label: "log₁₀", fill: "#606070", text: "#fff" },
+  { row: 1, col: 0, label: "Abs",   fill: "#221f23", text: "#fff" },
+  { row: 1, col: 1, label: "x³",    fill: "#221f23", text: "#fff" },
+  { row: 1, col: 4, label: "x⁻¹",   fill: "#221f23", text: "#fff" },
+  { row: 1, col: 5, label: "log₁₀", fill: "#221f23", text: "#fff" },
 
   // row 2 – top grey function row
-  { row: 2, col: 0, label: "a/b", fill: "#606070", text: "#fff" },
-  { row: 2, col: 1, label: "√",  fill: "#606070", text: "#fff" },
-  { row: 2, col: 2, label: "x²", fill: "#606070", text: "#fff" },
-  { row: 2, col: 3, label: "xⁿ", fill: "#606070", text: "#fff" },
-  { row: 2, col: 4, label: "log", fill: "#606070", text: "#fff" },
-  { row: 2, col: 5, label: "ln",  fill: "#606070", text: "#fff" },
+  { row: 2, col: 0, label: "a/b",   fill: "#221f23", text: "#fff" },
+  { row: 2, col: 1, label: "√",    fill: "#221f23", text: "#fff" },
+  { row: 2, col: 2, label: "x²",   fill: "#221f23", text: "#fff" },
+  { row: 2, col: 3, label: "xⁿ",   fill: "#221f23", text: "#fff" },
+  { row: 2, col: 4, label: "log",  fill: "#221f23", text: "#fff" },
+  { row: 2, col: 5, label: "ln",   fill: "#221f23", text: "#fff" },
 
   // row 3 – trig / special
-  { row: 3, col: 0, label: "(—)", fill: "#606070", text: "#fff" },
-  { row: 3, col: 1, label: "°'''", fill: "#606070", text: "#fff" },
-  { row: 3, col: 2, label: "hyp", fill: "#606070", text: "#fff" },
-  { row: 3, col: 3, label: "sin", fill: "#606070", text: "#fff" },
-  { row: 3, col: 4, label: "cos", fill: "#606070", text: "#fff" },
-  { row: 3, col: 5, label: "tan", fill: "#606070", text: "#fff" },
+  { row: 3, col: 0, label: "(—)",  fill: "#221f23", text: "#fff" },
+  { row: 3, col: 1, label: "°'''", fill: "#221f23", text: "#fff" },
+  { row: 3, col: 2, label: "hyp",  fill: "#221f23", text: "#fff" },
+  { row: 3, col: 3, label: "sin",  fill: "#221f23", text: "#fff" },
+  { row: 3, col: 4, label: "cos",  fill: "#221f23", text: "#fff" },
+  { row: 3, col: 5, label: "tan",  fill: "#221f23", text: "#fff" },
 
   // row 4 – memory / brackets
-  { row: 4, col: 0, label: "RCL", fill: "#606070", text: "#fff" },
-  { row: 4, col: 1, label: "ENG", fill: "#606070", text: "#fff" },
-  { row: 4, col: 2, label: "(",   fill: "#606070", text: "#fff" },
-  { row: 4, col: 3, label: ")",   fill: "#606070", text: "#fff" },
-  { row: 4, col: 4, label: "S↔D", fill: "#606070", text: "#fff" },
-  { row: 4, col: 5, label: "M+",  fill: "#606070", text: "#fff" },
+  { row: 4, col: 0, label: "RCL",  fill: "#221f23", text: "#fff" },
+  { row: 4, col: 1, label: "ENG",  fill: "#221f23", text: "#fff" },
+  { row: 4, col: 2, label: "(",    fill: "#221f23", text: "#fff" },
+  { row: 4, col: 3, label: ")",    fill: "#221f23", text: "#fff" },
+  { row: 4, col: 4, label: "S↔D",  fill: "#221f23", text: "#fff" },
+  { row: 4, col: 5, label: "M+",   fill: "#221f23", text: "#fff" },
 
   // row 5 – 7 8 9 DEL AC
-  { row: 5, col: 0, label: "7",   fill: "#6c7084", text: "#fff" },
-  { row: 5, col: 1, label: "8",   fill: "#6c7084", text: "#fff" },
-  { row: 5, col: 2, label: "9",   fill: "#6c7084", text: "#fff" },
-  { row: 5, col: 3, label: "DEL", fill: "#f2968f", text: "#000" },
-  { row: 5, col: 4, label: "AC",  fill: "#f2968f", text: "#000" },
+  { row: 5, col: 0, label: "7",    fill: "#575757", text: "#fff" },
+  { row: 5, col: 1, label: "8",    fill: "#575757", text: "#fff" },
+  { row: 5, col: 2, label: "9",    fill: "#575757", text: "#fff" },
+  { row: 5, col: 3, label: "DEL",  fill: "#8c9b3d", text: "#fff" },
+  { row: 5, col: 4, label: "AC",   fill: "#8c9b3d", text: "#fff" },
 
   // row 6 – 4 5 6 × ÷
-  { row: 6, col: 0, label: "4",   fill: "#6c7084", text: "#fff" },
-  { row: 6, col: 1, label: "5",   fill: "#6c7084", text: "#fff" },
-  { row: 6, col: 2, label: "6",   fill: "#6c7084", text: "#fff" },
-  { row: 6, col: 3, label: "×",   fill: "#6c7084", text: "#fff" },
-  { row: 6, col: 4, label: "÷",   fill: "#6c7084", text: "#fff" },
+  { row: 6, col: 0, label: "4",    fill: "#575757", text: "#fff" },
+  { row: 6, col: 1, label: "5",    fill: "#575757", text: "#fff" },
+  { row: 6, col: 2, label: "6",    fill: "#575757", text: "#fff" },
+  { row: 6, col: 3, label: "×",    fill: "#575757", text: "#fff" },
+  { row: 6, col: 4, label: "÷",    fill: "#575757", text: "#fff" },
 
   // row 7 – 1 2 3 + −
-  { row: 7, col: 0, label: "1",   fill: "#6c7084", text: "#fff" },
-  { row: 7, col: 1, label: "2",   fill: "#6c7084", text: "#fff" },
-  { row: 7, col: 2, label: "3",   fill: "#6c7084", text: "#fff" },
-  { row: 7, col: 3, label: "+",   fill: "#6c7084", text: "#fff" },
-  { row: 7, col: 4, label: "—",   fill: "#6c7084", text: "#fff" },
+  { row: 7, col: 0, label: "1",    fill: "#575757", text: "#fff" },
+  { row: 7, col: 1, label: "2",    fill: "#575757", text: "#fff" },
+  { row: 7, col: 2, label: "3",    fill: "#575757", text: "#fff" },
+  { row: 7, col: 3, label: "+",    fill: "#575757", text: "#fff" },
+  { row: 7, col: 4, label: "—",    fill: "#575757", text: "#fff" },
 
   // row 8 – 0 . ×10^x Ans =
-  { row: 8, col: 0, label: "0",    fill: "#6c7084", text: "#fff" },
-  { row: 8, col: 1, label: ".",    fill: "#6c7084", text: "#fff" },
-  { row: 8, col: 2, label: "×10ˣ", fill: "#6c7084", text: "#fff" },
-  { row: 8, col: 3, label: "Ans",  fill: "#6c7084", text: "#fff" },
-  { row: 8, col: 4, label: "=",    fill: "#62b6c8", text: "#fff" } // bluish equals
+  { row: 8, col: 0, label: "0",    fill: "#575757", text: "#fff" },
+  { row: 8, col: 1, label: ".",    fill: "#575757", text: "#fff" },
+  { row: 8, col: 2, label: "×10ˣ", fill: "#575757", text: "#fff" },
+  { row: 8, col: 3, label: "Ans",  fill: "#575757", text: "#fff" },
+  { row: 8, col: 4, label: "=",    fill: "#575757", text: "#fff" }
 ];
 
 // --- Small helpers for drawing expression -----------------------------
@@ -423,7 +423,7 @@ function drawCalculator() {
   const margin = 20;
   const bodyRadius = 30;
   roundedRect(ctx, margin, margin, W - 2 * margin, H - 2 * margin, bodyRadius);
-  ctx.fillStyle = "#4e4c69";
+  ctx.fillStyle = "#312f30";
   ctx.fill();
   ctx.lineWidth = 2;
   ctx.strokeStyle = "#202030";
@@ -514,6 +514,8 @@ function drawCalculator() {
   const wideRowCols = 5;
   const wideKeyW = (fullRowWidth - (wideRowCols - 1) * colGap) / wideRowCols;
 
+  const shadowOffset = 3;
+
   keys.forEach(key => {
     const isWideRow = key.row >= 5; // rows 5–8
     const thisKeyW = isWideRow ? wideKeyW : keyW;
@@ -526,6 +528,12 @@ function drawCalculator() {
     key.w = thisKeyW;
     key.h = keyH;
 
+    // drop shadow
+    roundedRect(ctx, x + shadowOffset, y + shadowOffset, thisKeyW, keyH, 5);
+    ctx.fillStyle = "rgba(0, 0, 0, 0.35)";
+    ctx.fill();
+
+    // key top
     roundedRect(ctx, x, y, thisKeyW, keyH, 5);
     ctx.fillStyle = key.fill;
     ctx.fill();
