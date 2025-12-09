@@ -2,59 +2,60 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>fx-82ES Canvas Mock</title>
   <style>
-    body {
+    html, body {
       margin: 0;
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      padding: 0;
+      height: 100%;
       background: #222;
       font-family: Arial, sans-serif;
-      padding: 10px;
-      box-sizing: border-box;
+    }
+    body {
+      overflow: hidden; /* stop scrolling on mobile */
     }
     canvas {
-      image-rendering: crisp-edges;
-      width: 100%;
-      max-width: 480px;
-      height: auto;
       display: block;
+      image-rendering: crisp-edges;
+      touch-action: manipulation; /* helps prevent double-tap zoom */
     }
   </style>
 </head>
 <body>
-<canvas id="calc" width="480" height="760"></canvas>
+<canvas id="calc"></canvas>
 
 <script>
+// Logical design size (everything is drawn in this coordinate system)
+const DESIGN_WIDTH  = 480;
+const DESIGN_HEIGHT = 760;
+
 const canvas = document.getElementById("calc");
 const ctx = canvas.getContext("2d");
 
+// --- Global transform for responsive scaling ---------------------------
+let scale = 1;
+let offsetX = 0;
+let offsetY = 0;
+
 // --- Calculator state --------------------------------------------------
 let expr = "";          // expression text shown at top-left
-let result = "";        // result text (for decimal mode)
+let result = "";        // result text shown bottom-right
 let lastAnswer = "";    // for "Ans" button
 let cursorPos = 0;      // insertion index in expr
 let cursorVisible = true;
 
 let pad = { cx: 0, cy: 0, outerR: 0, innerR: 0 }; // arrow pad geometry
 
-// Structured fraction tokens
+// special tokens for structured fractions
 const FRACTION_START = "\uE000";
 const FRACTION_SEP   = "\uE001";
 const FRACTION_END   = "\uE002";
 const PLACEHOLDER    = "□";
 
-// Fonts & sizes
 const baseFont  = "20px Arial";
 const superFont = "14px Arial";
 const PLACEHOLDER_WIDTH = 16 + 4; // box + padding
-
-// Result mode: decimal or fraction (for S<>D)
-let lastNumericResult = null;      // Number
-let resultMode = "decimal";        // "decimal" | "fraction"
-let lastFraction = null;           // { num, den } when in fraction mode
 
 // --- Rounded rectangle helper ------------------------------------------
 function roundedRect(ctx, x, y, w, h, r) {
@@ -76,16 +77,16 @@ const keys = [
   // row 0 – yellow / pink / purple keys
   { row: 0, col: 0, label: "SHIFT", fill: "#f7d46a", text: "#333" },
   { row: 0, col: 1, label: "ALPHA", fill: "#f2b0b0", text: "#333" },
-  { row: 0, col: 2, label: "MODE", fill: "#6f6aa8", text: "#fff" },
+  { row: 0, col: 2, label: "MODE",  fill: "#6f6aa8", text: "#fff" },
   { row: 0, col: 3, label: "SETUP", fill: "#6f6aa8", text: "#fff" },
-  { row: 0, col: 4, label: "ON", fill: "#6f6aa8", text: "#fff" },
-  { row: 0, col: 5, label: "OFF", fill: "#6f6aa8", text: "#fff" },
+  { row: 0, col: 4, label: "ON",    fill: "#6f6aa8", text: "#fff" },
+  { row: 0, col: 5, label: "OFF",   fill: "#6f6aa8", text: "#fff" },
 
   // row 1 – top grey function row
-  { row: 1, col: 0, label: "a/b", fill: "#606070", text: "#fff" }, // drawn as icon
-  { row: 1, col: 1, label: "√",  fill: "#606070", text: "#fff" },
-  { row: 1, col: 2, label: "x²", fill: "#606070", text: "#fff" },
-  { row: 1, col: 3, label: "xⁿ", fill: "#606070", text: "#fff" },
+  { row: 1, col: 0, label: "a/b", fill: "#606070", text: "#fff" },
+  { row: 1, col: 1, label: "√",   fill: "#606070", text: "#fff" },
+  { row: 1, col: 2, label: "x²",  fill: "#606070", text: "#fff" },
+  { row: 1, col: 3, label: "xⁿ",  fill: "#606070", text: "#fff" },
   { row: 1, col: 4, label: "log", fill: "#606070", text: "#fff" },
   { row: 1, col: 5, label: "ln",  fill: "#606070", text: "#fff" },
 
@@ -297,6 +298,7 @@ function drawExpression(screenX, screenY, screenW, screenH) {
       }
 
       if (sep === -1 || end === -1) {
+        // malformed – just draw token as a blank box-ish char
         x = drawInlineFromTo(i, i + 1, baseY, x);
         i++;
         continue;
@@ -351,53 +353,7 @@ function drawExpression(screenX, screenY, screenW, screenH) {
   ctx.restore();
 }
 
-// --- Result drawing (decimal or fraction) -----------------------------
 function drawResult(screenX, screenY, screenW, screenH) {
-  // If fraction mode and we have a fraction, draw the stacked fraction.
-  if (resultMode === "fraction" && lastFraction && Number.isFinite(lastFraction.num) && Number.isFinite(lastFraction.den)) {
-    const { num, den } = lastFraction;
-    const numStr = String(num);
-    const denStr = String(den);
-
-    ctx.save();
-    ctx.fillStyle = "#000";
-    ctx.textBaseline = "alphabetic";
-    ctx.font = "bold 22px Arial";
-
-    const wNum = ctx.measureText(numStr).width;
-    const wDen = ctx.measureText(denStr).width;
-    const fracWidth = Math.max(wNum, wDen) + 10;
-
-    // Right-align near bottom-right of the screen
-    const rightPadding = 10;
-    const startX = screenX + screenW - rightPadding - fracWidth;
-
-    const numBaseline = screenY + screenH / 2 - 4;
-    const denBaseline = screenY + screenH - 18;
-
-    const numX = startX + (fracWidth - wNum) / 2;
-    const denX = startX + (fracWidth - wDen) / 2;
-
-    // Draw numerator
-    ctx.fillText(numStr, numX, numBaseline);
-
-    // Draw denominator
-    ctx.fillText(denStr, denX, denBaseline);
-
-    // Draw vinculum between them
-    const lineY = (numBaseline + denBaseline) / 2 - 6;
-    ctx.beginPath();
-    ctx.moveTo(startX, lineY);
-    ctx.lineTo(startX + fracWidth, lineY);
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = "#000";
-    ctx.stroke();
-
-    ctx.restore();
-    return;
-  }
-
-  // Otherwise decimal mode, or no valid fraction
   if (!result) return;
   ctx.save();
   ctx.fillStyle = "#000";
@@ -414,8 +370,8 @@ function drawResult(screenX, screenY, screenW, screenH) {
 
 // --- Main drawing of calculator ---------------------------------------
 function drawCalculator() {
-  const W = canvas.width;
-  const H = canvas.height;
+  const W = DESIGN_WIDTH;
+  const H = DESIGN_HEIGHT;
 
   // background behind calculator
   ctx.fillStyle = "#303040";
@@ -523,41 +479,11 @@ function drawCalculator() {
     ctx.strokeStyle = "#1e1e28";
     ctx.stroke();
 
-    // Draw label or special fraction icon
-    if (key.label === "a/b") {
-      // Draw fraction icon: two white boxes and a vinculum
-      const cx = x + keyW / 2;
-      const cy = y + keyH / 2;
-      const boxW = 18;
-      const boxH = 12;
-
-      // top box
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(cx - boxW / 2, cy - boxH - 3, boxW, boxH);
-      ctx.strokeStyle = "#000000";
-      ctx.lineWidth = 1;
-      ctx.strokeRect(cx - boxW / 2, cy - boxH - 3, boxW, boxH);
-
-      // bottom box
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(cx - boxW / 2, cy + 3, boxW, boxH);
-      ctx.strokeStyle = "#000000";
-      ctx.strokeRect(cx - boxW / 2, cy + 3, boxW, boxH);
-
-      // vinculum
-      ctx.beginPath();
-      ctx.moveTo(cx - boxW / 2 - 2, cy);
-      ctx.lineTo(cx + boxW / 2 + 2, cy);
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = "#000000";
-      ctx.stroke();
-    } else {
-      ctx.fillStyle = key.text;
-      ctx.font = "bold 14px Arial";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(key.label, x + keyW / 2, y + keyH / 2 + 1);
-    }
+    ctx.fillStyle = key.text;
+    ctx.font = "bold 14px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(key.label, x + keyW / 2, y + keyH / 2 + 1);
   });
 
   // reset text state
@@ -593,9 +519,6 @@ function clearAll() {
   expr = "";
   result = "";
   cursorPos = 0;
-  lastNumericResult = null;
-  resultMode = "decimal";
-  lastFraction = null;
 }
 
 // Convert fractions from internal tokens to JS "(/)" form
@@ -615,6 +538,7 @@ function convertFractionsToEval(s) {
         }
       }
       if (sep === -1 || end === -1) {
+        // malformed – skip this token
         continue;
       }
       let num = s.slice(i + 1, sep).replace(new RegExp(PLACEHOLDER, "g"), "");
@@ -626,7 +550,7 @@ function convertFractionsToEval(s) {
       out += "(" + num + ")/(" + den + ")";
       i = end;
     } else if (ch === FRACTION_SEP || ch === FRACTION_END) {
-      // ignore
+      // shouldn't appear alone – ignore
     } else {
       out += ch;
     }
@@ -672,55 +596,14 @@ function hasDanglingPower() {
   return false;
 }
 
-// Continued-fraction decimal → fraction
-function decimalToFraction(x, maxDen = 999) {
-  if (!Number.isFinite(x)) return null;
-
-  let sign = x < 0 ? -1 : 1;
-  x = Math.abs(x);
-
-  if (Math.abs(x - Math.round(x)) < 1e-12) {
-    return { num: sign * Math.round(x), den: 1 };
-  }
-
-  let h1 = 1, h2 = 0;
-  let k1 = 0, k2 = 1;
-  let b = x;
-  const eps = 1e-12;
-
-  do {
-    const a = Math.floor(b);
-    const h = a * h1 + h2;
-    const k = a * k1 + k2;
-
-    if (k > maxDen) break;
-
-    h2 = h1; h1 = h;
-    k2 = k1; k1 = k;
-
-    const frac = h1 / k1;
-    if (Math.abs(frac - x) < eps) break;
-
-    b = 1 / (b - a);
-  } while (true);
-
-  return { num: sign * h1, den: k1 };
-}
-
 function evaluateExpression() {
   if (!expr) {
     result = "";
-    lastNumericResult = null;
-    resultMode = "decimal";
-    lastFraction = null;
     return;
   }
 
   if (hasDanglingPower()) {
     result = "Error";
-    lastNumericResult = null;
-    resultMode = "decimal";
-    lastFraction = null;
     return;
   }
 
@@ -729,22 +612,13 @@ function evaluateExpression() {
     const fn = Function('"use strict"; return (' + evalStr + ');');
     let val = fn();
     if (typeof val === "number" && Number.isFinite(val)) {
-      lastNumericResult = val;
-      resultMode = "decimal";
-      lastFraction = null;
       result = String(val);
       lastAnswer = result;
     } else {
       result = "Error";
-      lastNumericResult = null;
-      resultMode = "decimal";
-      lastFraction = null;
     }
   } catch (e) {
     result = "Error";
-    lastNumericResult = null;
-    resultMode = "decimal";
-    lastFraction = null;
   }
 }
 
@@ -796,46 +670,22 @@ function handleKey(label) {
       break;
 
     // fraction template: structured fraction with two placeholders
-    case "a/b": {
-      const oldPos = cursorPos;
-      const template =
+    case "a/b":
+      insertText(
         FRACTION_START +
         PLACEHOLDER +
         FRACTION_SEP +
         PLACEHOLDER +
-        FRACTION_END;
-      insertText(template);
-      // Move cursor to the top placeholder (numerator)
-      cursorPos = oldPos + 1;
+        FRACTION_END
+      );
+      // move cursor into the top box immediately
+      cursorPos -= (FRACTION_END.length + PLACEHOLDER.length + FRACTION_SEP.length + PLACEHOLDER.length);
+      cursorPos += 1; // inside numerator (after FRACTION_START)
       break;
-    }
 
     // answer recall
     case "Ans":
       if (lastAnswer) insertText(lastAnswer);
-      break;
-
-    // S<>D: decimal/fraction toggle on the result
-    case "S<>D":
-      if (lastNumericResult == null || !Number.isFinite(lastNumericResult)) {
-        break;
-      }
-      // Don't bother toggling perfect integers (stays as decimal)
-      if (Number.isInteger(lastNumericResult)) {
-        break;
-      }
-
-      if (resultMode === "decimal") {
-        const frac = decimalToFraction(lastNumericResult);
-        if (!frac || !frac.den || frac.den === 1) break;
-        lastFraction = frac;
-        resultMode = "fraction";
-        result = ""; // display handled by fraction drawing
-      } else {
-        resultMode = "decimal";
-        lastFraction = null;
-        result = String(lastNumericResult);
-      }
       break;
 
     // clear & delete
@@ -866,6 +716,7 @@ function handleKey(label) {
       evaluateExpression();
       break;
 
+    // ignoring for now
     default:
       // SHIFT, ALPHA, MODE, SETUP, etc – no-op for now
       break;
@@ -875,15 +726,19 @@ function handleKey(label) {
 // --- Mouse interaction: keys + arrow pad ------------------------------
 canvas.addEventListener("click", (e) => {
   const rect = canvas.getBoundingClientRect();
+  const cssX = e.clientX - rect.left;
+  const cssY = e.clientY - rect.top;
+  const dpr = window.devicePixelRatio || 1;
 
-  // Map from CSS pixels to canvas coordinates (for responsive scaling)
-  const scaleX = canvas.width / rect.width;
-  const scaleY = canvas.height / rect.height;
+  // convert from CSS pixels to canvas pixels
+  const canvasX = cssX * dpr;
+  const canvasY = cssY * dpr;
 
-  const mx = (e.clientX - rect.left) * scaleX;
-  const my = (e.clientY - rect.top) * scaleY;
+  // convert to logical design coordinates
+  const mx = (canvasX - offsetX) / scale;
+  const my = (canvasY - offsetY) / scale;
 
-  // Check arrow pad ring region first
+  // Check arrow pad ring region first (in logical coords)
   const dx = mx - pad.cx;
   const dy = my - pad.cy;
   const dist = Math.sqrt(dx*dx + dy*dy);
@@ -1000,12 +855,48 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// --- Render loop (for blinking cursor) --------------------------------
+// --- Render loop (for blinking cursor & responsive resize) ------------
 function render() {
+  const dpr = window.devicePixelRatio || 1;
+  const displayWidth  = window.innerWidth;
+  const displayHeight = window.innerHeight;
+
+  // Set CSS size
+  canvas.style.width  = displayWidth + "px";
+  canvas.style.height = displayHeight + "px";
+
+  // Set internal pixel size
+  const desiredWidth  = displayWidth * dpr;
+  const desiredHeight = displayHeight * dpr;
+  if (canvas.width !== desiredWidth || canvas.height !== desiredHeight) {
+    canvas.width  = desiredWidth;
+    canvas.height = desiredHeight;
+  }
+
+  // Reset transform & clear
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Calculate scale to fit DESIGN_* into the canvas while preserving aspect
+  scale = Math.min(
+    canvas.width  / DESIGN_WIDTH,
+    canvas.height / DESIGN_HEIGHT
+  );
+  offsetX = (canvas.width  - DESIGN_WIDTH  * scale) / 2;
+  offsetY = (canvas.height - DESIGN_HEIGHT * scale) / 2;
+
+  // Apply transform
+  ctx.translate(offsetX, offsetY);
+  ctx.scale(scale, scale);
+
+  // Draw calculator in logical coordinates
   drawCalculator();
 }
 
-// blink cursor
+// Re-render on window resize
+window.addEventListener("resize", render);
+
+// Blink cursor
 setInterval(() => {
   cursorVisible = !cursorVisible;
   render();
